@@ -1,10 +1,16 @@
 package com.kitapyurdum_clone.service;
 
+import com.kitapyurdum_clone.converter.CustomerConverter;
+import com.kitapyurdum_clone.dto.request.CustomerSaveRequest;
+import com.kitapyurdum_clone.exception.ExceptionMessage;
+import com.kitapyurdum_clone.exception.KitapYurdumException;
 import com.kitapyurdum_clone.model.Customer;
 import com.kitapyurdum_clone.model.enums.AccountType;
 import com.kitapyurdum_clone.repository.CustomerRepository;
 import com.kitapyurdum_clone.util.HashUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +20,26 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class CustomerService {
 
     private final CustomerRepository customerRepository ;
 
-    public void save(Customer customer) {
+    public void save(CustomerSaveRequest request) {
+
+        Customer foundCostumer = getByEmail(request.getEmail());
+
+        if (foundCostumer != null){
+            log.info(ExceptionMessage.EMAIL_ALREADY_EXIST);
+            throw new KitapYurdumException(ExceptionMessage.EMAIL_ALREADY_EXIST);
+        }
+
+
+        Customer customer = CustomerConverter.toCostumer(request);
+
         customerRepository.createCustomer(customer);
+        log.info("Costumer created : " + customer.toString());
 
-        String hashedPassword = HashUtil.generate(customer.getPassword());
-
-        customer.setPassword(hashedPassword);
 
     }
 
@@ -48,7 +64,7 @@ public class CustomerService {
         Optional<Customer> foundedCostumer = customerRepository.findById(id);
 
         if(foundedCostumer.isEmpty()){
-            throw new RuntimeException("Costumer bulunamadı id :"+id);
+            throw new KitapYurdumException(ExceptionMessage.COSTUMER_NOT_FOUND );
         }
         return foundedCostumer.get();
     }
@@ -57,12 +73,11 @@ public class CustomerService {
 
         Optional<Customer> foundedCostumer = customerRepository.findByEmail(email);
 
-        if(foundedCostumer.isEmpty()){
-            throw new RuntimeException("Costumer bulunamadı email : "+ email);
-        }
-
         if(!foundedCostumer.get().getIsActive()){
-            throw new RuntimeException("Costumer aktif değil email : "+ email);
+
+            log.error(ExceptionMessage.COSTUMER_NOT_ACTIVE);
+
+            throw new KitapYurdumException(ExceptionMessage.COSTUMER_NOT_ACTIVE);
         }
 
 

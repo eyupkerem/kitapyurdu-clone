@@ -3,6 +3,7 @@ package com.kitapyurdum_clone.model;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter

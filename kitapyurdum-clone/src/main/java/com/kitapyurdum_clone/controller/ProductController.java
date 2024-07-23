@@ -23,6 +23,7 @@ public class ProductController {
     @PostMapping()
     public ResponseEntity<Void> save(@RequestBody ProductSaveRequest request){
         productService.save(request);
+        System.out.println("Kaydedildi  " + request.toString());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

@@ -31,7 +31,7 @@ public class ProductService {
 
         if (publisher.isEmpty()) {
 
-            log.error("publisher bulamadım : {}" + request.getPublisherName());
+            log.info("publisher bulamadım : {}" + request.getPublisherName());
 
             throw new RuntimeException("publisher bulamadım");
         }
